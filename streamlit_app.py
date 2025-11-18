@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import math
 from pathlib import Path
+from helper_functions import preprocess_text
 
 # Set the title and favicon that appear in the Browser's tab bar.
 st.set_page_config(
@@ -65,7 +66,8 @@ if st.session_state["response_text"]:
     else:
         if st.session_state["user_satisfied"]:
             with col2:
-                st.success("👍 Thanks for the feedback!")
+                processed_text = preprocess_text(user_query)
+                st.success(processed_text)
         else:
             with col2:
                 st.info("Response regenerated")
