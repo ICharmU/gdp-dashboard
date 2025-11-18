@@ -89,10 +89,12 @@ countries = gdp_df['Country Code'].unique()
 if not len(countries):
     st.warning("Select at least one country")
 
+user_query = st.text_input("user_query")
+
 selected_countries = st.multiselect(
     'Which countries would you like to view?',
     countries,
-    ['DEU', 'FRA', 'GBR', 'BRA'])
+    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
 
 ''
 ''
