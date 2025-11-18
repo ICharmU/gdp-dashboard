@@ -26,14 +26,14 @@ if "text" not in st.session_state:
 
 k = 10 # number of results
 for i in range(1, k+1):
-    if "response_text" not in st.session_state:
-        st.session_state[f"response_text_{i}    "] = ""
+    if f"response_text_{i}" not in st.session_state:
+        st.session_state[f"response_text_{i}"] = ""
 
 user_query = st.text_input("user_query", key="user_query", on_change=text_update, placeholder="Ask a question!")
 
 # Display the response
-if st.session_state["response_text"]:
-    st.text(f"Response: {st.session_state['response_text']}")
+# if st.session_state["response_text"]:
+#     st.text(f"Response: {st.session_state['response_text']}")
 
 
 
