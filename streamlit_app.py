@@ -17,6 +17,16 @@ def text_update():
     text = generate_response(user_query)
     st.text(text)
 
+def replace_text():
+    st.session_state["text"] = text1.replace(before, after)
+
+if "text" not in st.session_state:
+    st.session_state["text"] = ""
+text1 = st.text_area('Text : ', st.session_state["text"])
+before = st.text_input('Before')
+after = st.text_input('After')
+button = st.button('Button', on_click=replace_text) 
+
 user_query = st.text_input("user_query", on_change=text_update, placeholder="Ask a question!")
 
 
