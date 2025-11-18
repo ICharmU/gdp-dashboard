@@ -34,7 +34,7 @@ user_query = st.text_input("user_query", key="user_query", on_change=text_update
 # Display the response
 for i in range(1, k+1):
     if st.session_state[f"response_text_{i}"]:
-        st.text(f"Response {i}: {st.session_state[f"response_text_{i}"]}")
+        st.text(f"Response {i}: {st.session_state[f'response_text_{i}']}")
 
 
 
