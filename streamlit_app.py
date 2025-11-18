@@ -80,7 +80,18 @@ for i in range(1, k+1):
             
             # Stack Overflow style voting layout
             st.button("▲", key=f"up_{i}", on_click=upvote, args=(i,), type="primary" if user_vote == "up" else "secondary")
-            st.markdown(f"<div style='text-align: center; font-weight: bold; font-size: 18px;'>{st.session_state[f'votes_{i}']}</div>", unsafe_allow_html=True)
+            st.markdown(f"""
+            <div style='
+                text-align: center; 
+                font-weight: bold; 
+                font-size: 18px; 
+                display: flex; 
+                justify-content: center; 
+                align-items: center; 
+                height: 40px; 
+                margin: 5px 0;
+            '>{st.session_state[f'votes_{i}']}</div>
+            """, unsafe_allow_html=True)
             st.button("▼", key=f"down_{i}", on_click=downvote, args=(i,), type="primary" if user_vote == "down" else "secondary")
         
         st.divider()
