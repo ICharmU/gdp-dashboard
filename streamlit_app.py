@@ -11,97 +11,61 @@ st.set_page_config(
 
 
 def generate_response(query: str):
-    response = query[::-1]
-    responses = [response] * k
-    return responses
+    return query[::-1]
 
-def upvote(response_id):
-    current_vote = st.session_state.get(f"user_vote_{response_id}", None)
-    
-    # If user already upvoted, remove the upvote
-    if current_vote == "up":
-        st.session_state[f"votes_{response_id}"] -= 1
-        st.session_state[f"user_vote_{response_id}"] = None
-    # If user downvoted before, remove downvote and add upvote
-    elif current_vote == "down":
-        st.session_state[f"votes_{response_id}"] += 2  # Remove -1 and add +1
-        st.session_state[f"user_vote_{response_id}"] = "up"
-    # If user hasn't voted, add upvote
-    else:
-        st.session_state[f"votes_{response_id}"] += 1
-        st.session_state[f"user_vote_{response_id}"] = "up"
+def thumbs_up():
+    st.session_state["feedback_given"] = True
+    st.session_state["user_satisfied"] = True
 
-def downvote(response_id):
-    current_vote = st.session_state.get(f"user_vote_{response_id}", None)
-    
-    # If user already downvoted, remove the downvote
-    if current_vote == "down":
-        st.session_state[f"votes_{response_id}"] += 1
-        st.session_state[f"user_vote_{response_id}"] = None
-    # If user upvoted before, remove upvote and add downvote
-    elif current_vote == "up":
-        st.session_state[f"votes_{response_id}"] -= 2  # Remove +1 and add -1
-        st.session_state[f"user_vote_{response_id}"] = "down"
-    # If user hasn't voted, add downvote
-    else:
-        st.session_state[f"votes_{response_id}"] -= 1
-        st.session_state[f"user_vote_{response_id}"] = "down"
+def thumbs_down():
+    # Increment bad query counter
+    st.session_state["bad_query_count"] += 1
+    # Regenerate response
+    if st.session_state.user_query:
+        st.session_state["response_text"] = generate_response(st.session_state.user_query)
+    st.session_state["feedback_given"] = False
+    st.session_state["user_satisfied"] = False
 
 def text_update():
-    for i in range(1, k+1):
-        if st.session_state.user_query:
-            responses = generate_response(st.session_state.user_query)
-            st.session_state[f"response_text_{i}"] = responses[i-1]
+    if st.session_state.user_query:
+        st.session_state["response_text"] = generate_response(st.session_state.user_query)
+        st.session_state["feedback_given"] = False
+        st.session_state["user_satisfied"] = False
 
-if "text" not in st.session_state:
-    st.session_state["text"] = ""
-
-k = 10 # number of results
-for i in range(1, k+1):
-    if f"response_text_{i}" not in st.session_state:
-        st.session_state[f"response_text_{i}"] = ""
-    if f"votes_{i}" not in st.session_state:
-        st.session_state[f"votes_{i}"] = 0
-    if f"user_vote_{i}" not in st.session_state:
-        st.session_state[f"user_vote_{i}"] = None
+# Initialize session state
+if "response_text" not in st.session_state:
+    st.session_state["response_text"] = ""
+if "bad_query_count" not in st.session_state:
+    st.session_state["bad_query_count"] = 0
+if "feedback_given" not in st.session_state:
+    st.session_state["feedback_given"] = False
+if "user_satisfied" not in st.session_state:
+    st.session_state["user_satisfied"] = False
 
 user_query = st.text_input("user_query", key="user_query", on_change=text_update, placeholder="Ask a question!")
 
-# Display the responses with voting
-for i in range(1, k+1):
-    if st.session_state[f"response_text_{i}"]:
-        col1, col2 = st.columns([8, 1])
-        
-        with col1:
-            st.text(f"Response {i}: {st.session_state[f'response_text_{i}']}")
-        
+# Display bad query counter
+if st.session_state["bad_query_count"] > 0:
+    st.error(f"Bad queries: {st.session_state['bad_query_count']}")
+
+# Display the response with feedback buttons
+if st.session_state["response_text"]:
+    col1, col2, col3 = st.columns([6, 1, 1])
+    
+    with col1:
+        st.text(f"Response: {st.session_state['response_text']}")
+    
+    # Only show feedback buttons if user hasn't given feedback yet
+    if not st.session_state["feedback_given"]:
         with col2:
-            user_vote = st.session_state.get(f"user_vote_{i}", None)
-            
-            # Stack Overflow style voting layout
-            st.button("▲", key=f"up_{i}", on_click=upvote, args=(i,), type="primary" if user_vote == "up" else "secondary")
-            st.markdown(f"""
-            <div style='
-                text-align: center; 
-                font-weight: bold; 
-                font-size: 18px; 
-                display: flex; 
-                justify-content: center; 
-                align-items: center; 
-                height: 40px; 
-                margin: 5px 0;
-            '>{st.session_state[f'votes_{i}']}</div>
-            """, unsafe_allow_html=True)
-            st.button("▼", key=f"down_{i}", on_click=downvote, args=(i,), type="primary" if user_vote == "down" else "secondary")
+            st.button("👍", key="thumbs_up", on_click=thumbs_up, help="Good response")
         
-        st.divider()
-
-
-
-
-
-
-
-
-
-
+        with col3:
+            st.button("👎", key="thumbs_down", on_click=thumbs_down, help="Bad response - regenerate")
+    else:
+        if st.session_state["user_satisfied"]:
+            with col2:
+                st.success("👍 Thanks for the feedback!")
+        else:
+            with col2:
+                st.info("Response regenerated")
