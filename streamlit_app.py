@@ -19,7 +19,7 @@ def text_update():
     for i in range(1, k+1):
         if st.session_state.user_query:
             responses = generate_response(st.session_state.user_query)
-            st.session_state[f"response_text_{i}"] = responses[i]
+            st.session_state[f"response_text_{i}"] = responses[i-1]
 
 if "text" not in st.session_state:
     st.session_state["text"] = ""
