@@ -1,3 +1,4 @@
+import pandas as pd
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
@@ -90,7 +91,7 @@ def expand_contractions(text: str, contraction_map: dict):
 def preprocess_text(text):
     lemmatizer = WordNetLemmatizer()
     # Expand contractions
-    text = expand_contractions(text)
+    text = expand_contractions(text, contraction_map)
     
     # Tokenization
     tokens = word_tokenize(text)
