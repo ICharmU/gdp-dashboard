@@ -70,21 +70,18 @@ user_query = st.text_input("user_query", key="user_query", on_change=text_update
 # Display the responses with voting
 for i in range(1, k+1):
     if st.session_state[f"response_text_{i}"]:
-        col1, col2, col3, col4 = st.columns([6, 1, 1, 1])
+        col1, col2 = st.columns([8, 1])
         
         with col1:
             st.text(f"Response {i}: {st.session_state[f'response_text_{i}']}")
         
         with col2:
             user_vote = st.session_state.get(f"user_vote_{i}", None)
-            upvote_style = "type='primary'" if user_vote == "up" else ""
-            st.button("👍", key=f"up_{i}", on_click=upvote, args=(i,), type="primary" if user_vote == "up" else "secondary")
-        
-        with col3:
-            st.button("👎", key=f"down_{i}", on_click=downvote, args=(i,), type="primary" if user_vote == "down" else "secondary")
-        
-        with col4:
-            st.text(f"{st.session_state[f'votes_{i}']}")
+            
+            # Stack Overflow style voting layout
+            st.button("▲", key=f"up_{i}", on_click=upvote, args=(i,), type="primary" if user_vote == "up" else "secondary")
+            st.markdown(f"<div style='text-align: center; font-weight: bold; font-size: 18px;'>{st.session_state[f'votes_{i}']}</div>", unsafe_allow_html=True)
+            st.button("▼", key=f"down_{i}", on_click=downvote, args=(i,), type="primary" if user_vote == "down" else "secondary")
         
         st.divider()
 
