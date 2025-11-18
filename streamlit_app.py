@@ -16,10 +16,36 @@ def generate_response(query: str):
     return responses
 
 def upvote(response_id):
-    st.session_state[f"votes_{response_id}"] += 1
+    current_vote = st.session_state.get(f"user_vote_{response_id}", None)
+    
+    # If user already upvoted, remove the upvote
+    if current_vote == "up":
+        st.session_state[f"votes_{response_id}"] -= 1
+        st.session_state[f"user_vote_{response_id}"] = None
+    # If user downvoted before, remove downvote and add upvote
+    elif current_vote == "down":
+        st.session_state[f"votes_{response_id}"] += 2  # Remove -1 and add +1
+        st.session_state[f"user_vote_{response_id}"] = "up"
+    # If user hasn't voted, add upvote
+    else:
+        st.session_state[f"votes_{response_id}"] += 1
+        st.session_state[f"user_vote_{response_id}"] = "up"
 
 def downvote(response_id):
-    st.session_state[f"votes_{response_id}"] -= 1
+    current_vote = st.session_state.get(f"user_vote_{response_id}", None)
+    
+    # If user already downvoted, remove the downvote
+    if current_vote == "down":
+        st.session_state[f"votes_{response_id}"] += 1
+        st.session_state[f"user_vote_{response_id}"] = None
+    # If user upvoted before, remove upvote and add downvote
+    elif current_vote == "up":
+        st.session_state[f"votes_{response_id}"] -= 2  # Remove +1 and add -1
+        st.session_state[f"user_vote_{response_id}"] = "down"
+    # If user hasn't voted, add downvote
+    else:
+        st.session_state[f"votes_{response_id}"] -= 1
+        st.session_state[f"user_vote_{response_id}"] = "down"
 
 def text_update():
     for i in range(1, k+1):
@@ -36,6 +62,8 @@ for i in range(1, k+1):
         st.session_state[f"response_text_{i}"] = ""
     if f"votes_{i}" not in st.session_state:
         st.session_state[f"votes_{i}"] = 0
+    if f"user_vote_{i}" not in st.session_state:
+        st.session_state[f"user_vote_{i}"] = None
 
 user_query = st.text_input("user_query", key="user_query", on_change=text_update, placeholder="Ask a question!")
 
@@ -48,10 +76,12 @@ for i in range(1, k+1):
             st.text(f"Response {i}: {st.session_state[f'response_text_{i}']}")
         
         with col2:
-            st.button("👍", key=f"up_{i}", on_click=upvote, args=(i,))
+            user_vote = st.session_state.get(f"user_vote_{i}", None)
+            upvote_style = "type='primary'" if user_vote == "up" else ""
+            st.button("👍", key=f"up_{i}", on_click=upvote, args=(i,), type="primary" if user_vote == "up" else "secondary")
         
         with col3:
-            st.button("👎", key=f"down_{i}", on_click=downvote, args=(i,))
+            st.button("👎", key=f"down_{i}", on_click=downvote, args=(i,), type="primary" if user_vote == "down" else "secondary")
         
         with col4:
             st.text(f"{st.session_state[f'votes_{i}']}")
