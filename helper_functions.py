@@ -1,11 +1,12 @@
+from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+
 def expand_contractions(text: str, contraction_map: dict):
     for contraction, expanded in contraction_map.items():
         text = text.replace(contraction, expanded)
     return text
 
-from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
 def preprocess_text(text):
     lemmatizer = WordNetLemmatizer()
     # Expand contractions
