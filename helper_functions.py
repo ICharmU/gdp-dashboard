@@ -2,6 +2,86 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 
+contraction_map = {
+    # Negative contractions
+    "ain't": "am not",
+    "aren't": "are not",
+    "can't": "cannot",
+    "couldn't": "could not",
+    "didn't": "did not",
+    "doesn't": "does not",
+    "don't": "do not",
+    "hadn't": "had not",
+    "hasn't": "has not",
+    "haven't": "have not",
+    "isn't": "is not",
+    "mightn't": "might not",
+    "mustn't": "must not",
+    "needn't": "need not",
+    "shan't": "shall not",
+    "shouldn't": "should not",
+    "wasn't": "was not",
+    "weren't": "were not",
+    "won't": "will not",
+    "wouldn't": "would not",
+    
+    # Pronoun contractions
+    "i'm": "i am",
+    "you're": "you are",
+    "he's": "he is",
+    "she's": "she is",
+    "it's": "it is",
+    "we're": "we are",
+    "they're": "they are",
+    "i've": "i have",
+    "you've": "you have",
+    "we've": "we have",
+    "they've": "they have",
+    "i'd": "i would",
+    "you'd": "you would",
+    "he'd": "he would",
+    "she'd": "she would",
+    "we'd": "we would",
+    "they'd": "they would",
+    "i'll": "i will",
+    "you'll": "you will",
+    "he'll": "he will",
+    "she'll": "she will",
+    "we'll": "we will",
+    "they'll": "they will",
+    
+    # Misc contractions
+    "let's": "let us",
+    "who's": "who is",
+    "what's": "what is",
+    "here's": "here is",
+    "there's": "there is",
+    "when's": "when is",
+    "where's": "where is",
+    "why's": "why is",
+    "how's": "how is",
+    "y'all": "you all",
+    "o'clock": "of the clock",
+    
+    # Informal / common text contractions
+    "ma'am": "madam",
+    "gonna": "going to",
+    "wanna": "want to",
+    "gotta": "got to",
+    "lemme": "let me",
+    "gimme": "give me",
+    "kinda": "kind of",
+    "ain’t": "am not",
+    "y’all": "you all",
+    "could’ve": "could have",
+    "should’ve": "should have",
+    "would’ve": "would have",
+    "might’ve": "might have",
+    "must’ve": "must have",
+    "shan’t": "shall not",
+    "let’s": "let us"
+}
+
 def expand_contractions(text: str, contraction_map: dict):
     for contraction, expanded in contraction_map.items():
         text = text.replace(contraction, expanded)
