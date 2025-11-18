@@ -9,10 +9,15 @@ st.set_page_config(
     page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
 )
 
-user_query = st.text_input("user_query", placeholder="Ask a question!")
+user_query = st.text_input("user_query", on_change=text_update, placeholder="Ask a question!")
+
+def text_update():
+    text = generate_response(user_query)
+    st.text(text)
 
 def generate_response(query: str):
     return str[::-1]
+
 
 
 
