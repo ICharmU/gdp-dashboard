@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import math
 from pathlib import Path
-from helper_functions import preprocess_text
+from helper_functions import chatbot_reply
 
 # Set the title and favicon that appear in the Browser's tab bar.
 st.set_page_config(
@@ -10,9 +10,12 @@ st.set_page_config(
     page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
 )
 
+# prep response generation
 
+
+# frontend setup
 def generate_response(query: str):
-    return query[::-1]
+    return chatbot_reply(query)
 
 def thumbs_up():
     st.session_state["feedback_given"] = True
@@ -66,8 +69,8 @@ if st.session_state["response_text"]:
     else:
         if st.session_state["user_satisfied"]:
             with col2:
-                processed_text = preprocess_text(user_query)
-                st.success(processed_text)
+                # processed_text = preprocess_text(user_query)
+                st.success("thumbs up")
         else:
             with col2:
                 st.info("Response regenerated")
