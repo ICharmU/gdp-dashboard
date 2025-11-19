@@ -16,15 +16,16 @@ st.set_page_config(
 
 # frontend setup
 df = pd.read_csv("Dataset/cleaned.csv").dropna()
-df['Score_question'] = df['Score_question'].astype(str)
-word_index_df = pd.read_csv('Dataset/word_to_index.csv', keep_default_na=False)
-unique_words = dict(zip(word_index_df['word'], word_index_df['index']))
-idf = pd.read_csv('Dataset/idf.csv', keep_default_na=False)
-idf = dict(zip(idf['word'], idf['idf_score']))
-tf_idf_matrix = load_npz("Dataset/sparse_matrix.npz")
-unique_df = pd.read_csv("Dataset/unique_df.csv")
+# df['Score_question'] = df['Score_question'].astype(str)
+# word_index_df = pd.read_csv('Dataset/word_to_index.csv', keep_default_na=False)
+# unique_words = dict(zip(word_index_df['word'], word_index_df['index']))
+# idf = pd.read_csv('Dataset/idf.csv', keep_default_na=False)
+# idf = dict(zip(idf['word'], idf['idf_score']))
+# tf_idf_matrix = load_npz("Dataset/sparse_matrix.npz")
+# unique_df = pd.read_csv("Dataset/unique_df.csv")
 
 def generate_response(query: str):
+    return query[::-1]
     return chatbot_reply(query, unique_words=unique_words, idf=idf, tf_idf_matrix=tf_idf_matrix, unique_df=unique_df, df=df)
 
 def thumbs_up():
