@@ -15,7 +15,7 @@ st.set_page_config(
 
 
 # frontend setup
-# df = pd.read_csv("Dataset/cleaned.csv").dropna()
+df = pd.read_csv("Dataset/half_cleaned.csv")
 # df['Score_question'] = df['Score_question'].astype(str)
 # word_index_df = pd.read_csv('Dataset/word_to_index.csv', keep_default_na=False)
 # unique_words = dict(zip(word_index_df['word'], word_index_df['index']))
