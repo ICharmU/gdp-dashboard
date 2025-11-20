@@ -11,47 +11,33 @@ st.set_page_config(
 # Memory-optimized data loading
 @st.cache_data
 def load_essential_data():
-    """Load only the most essential data to minimize memory usage"""
-    # Load only essential columns
-    essential_columns = ['Id', 'Title', 'Score_question', 'Score_answer']
+    """Load only the ultra-tiny dataset for maximum memory efficiency"""
     
     try:
-        # Try different datasets in order of preference (smallest first)
-        dataset_options = [
-            ("Dataset/ultra_tiny.csv", f"✅ Using ultra-tiny dataset (1% sample, ~4MB)"),
-            ("Dataset/tiny_optimized.csv", f"✅ Using tiny optimized dataset (10% sample)"),
-            ("Dataset/tiny_cleaned.csv", f"✅ Using tiny dataset (10% sample, ~37MB)"), 
-            ("Dataset/optimized/optimized_main.csv", f"✅ Using optimized dataset"),
-            ("Dataset/half_cleaned.csv", f"⚠️ Using half dataset - high memory usage")
-        ]
+        # Use only the ultra-tiny dataset
+        dataset_path = "Dataset/tiny_cleaned.csv"
         
-        for dataset_path, success_message in dataset_options:
-            if Path(dataset_path).exists():
-                if dataset_path == "Dataset/half_cleaned.csv":
-                    # Only load essential columns from the large dataset
-                    df = pd.read_csv(dataset_path, usecols=essential_columns + ['Body_question', 'Body_answer'])
-                else:
-                    df = pd.read_csv(dataset_path)
+        if Path(dataset_path).exists():
+            df = pd.read_csv(dataset_path)
+            st.success("✅ Using ultra-tiny dataset (1% sample, ~4MB)")
+            
+            # Quick data type optimization
+            if 'Id' in df.columns:
+                df['Id'] = pd.to_numeric(df['Id'], downcast='integer')
+            if 'Score_question' in df.columns:
+                df['Score_question'] = pd.to_numeric(df['Score_question'], downcast='integer')
+            if 'Score_answer' in df.columns:
+                df['Score_answer'] = pd.to_numeric(df['Score_answer'], downcast='integer')
                 
-                st.success(success_message)
-                
-                # Quick data type optimization for any dataset
-                if 'Id' in df.columns:
-                    df['Id'] = pd.to_numeric(df['Id'], downcast='integer')
-                if 'Score_question' in df.columns:
-                    df['Score_question'] = pd.to_numeric(df['Score_question'], downcast='integer')
-                if 'Score_answer' in df.columns:
-                    df['Score_answer'] = pd.to_numeric(df['Score_answer'], downcast='integer')
-                    
-                return df
-        
-        # If no datasets found
-        st.error("❌ No dataset files found")
-        st.info("💡 Run `python create_tiny_dataset.py` to create a memory-optimized dataset")
-        return pd.DataFrame()
+            return df
+        else:
+            # If ultra_tiny doesn't exist, show error and instructions
+            st.error("❌ Ultra-tiny dataset not found")
+            st.info("💡 Run `python create_tiny_dataset_simple.py` to create the ultra-tiny dataset")
+            return pd.DataFrame()
         
     except Exception as e:
-        st.error(f"Error loading dataset: {e}")
+        st.error(f"Error loading ultra-tiny dataset: {e}")
         return pd.DataFrame()
 
 @st.cache_data 
@@ -198,34 +184,35 @@ if df is not None and len(df) > 0:
     st.sidebar.success("✅ Dataset loaded successfully")
     
     # Dataset options
-    with st.sidebar.expander("📁 Available Datasets"):
-        st.write("**Current priority order:**")
-        st.write("1. ultra_tiny.csv (1%, ~4MB)")
-        st.write("2. tiny_cleaned.csv (10%, ~37MB)")
-        st.write("3. half_cleaned.csv (50%, ~371MB)")
-        st.write("*App uses smallest available*")
+    with st.sidebar.expander("📁 Dataset Configuration"):
+        st.write("**Currently using:**")
+        st.write("• ultra_tiny.csv (1% sample, ~4MB)")
+        st.write("**Status:** Maximum memory optimization")
+        st.info("App is configured to use only the ultra-tiny dataset for optimal memory usage.")
         
 else:
     st.sidebar.error("❌ Dataset not available")
     st.sidebar.write("The system will use fallback responses.")
     
 # Memory optimization tools
-with st.sidebar.expander("🔧 Memory Tools"):
-    st.write("**Create smaller datasets:**")
-    if st.button(f"Create Tiny Dataset (10%)", help=f"Creates 10% sample"):
-        st.info("Run: `python create_tiny_dataset_simple.py`")
-    st.write("**Current datasets:**")
+with st.sidebar.expander("🔧 Repository Status"):
+    st.write("**Available datasets in repo:**")
     dataset_files = [
-        ("Dataset/ultra_tiny.csv", "1%"),
-        ("Dataset/tiny_cleaned.csv", "10%"), 
-        ("Dataset/half_cleaned.csv", "50%")
+        ("Dataset/ultra_tiny.csv", "1%", "🟢 Active"),
+        ("Dataset/tiny_cleaned.csv", "10%", "⚪ Available"), 
+        ("Dataset/half_cleaned.csv", "50%", "⚪ Available")
     ]
-    for file_path, size in dataset_files:
+    for file_path, size, status in dataset_files:
         if Path(file_path).exists():
             file_size = Path(file_path).stat().st_size / 1024**2
-            st.write(f"✅ {size} sample: {file_size:.1f}MB")
+            st.write(f"{status} {size}: {file_size:.1f}MB")
         else:
-            st.write(f"❌ {size} sample: Not created")
+            st.write(f"❌ {size} sample: Not found")
+    
+    st.info("💡 App uses ultra_tiny.csv only for maximum memory efficiency")
+    
+    if st.button("Recreate Ultra-Tiny Dataset", help="Regenerate the 1% sample"):
+        st.info("Run: `python create_tiny_dataset_simple.py`")
 
 # Main interface
 st.title("StackBot - Memory Optimized")
