@@ -15,7 +15,7 @@ def load_essential_data():
     
     try:
         # Use only the ultra-tiny dataset
-        dataset_path = "Dataset/cleaned.csv"
+        dataset_path = "Dataset/ultra_tiny.csv"
         
         if Path(dataset_path).exists():
             df = pd.read_csv(dataset_path)
