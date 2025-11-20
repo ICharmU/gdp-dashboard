@@ -18,11 +18,11 @@ def load_essential_data():
     try:
         # Try different datasets in order of preference (smallest first)
         dataset_options = [
-            ("Dataset/ultra_tiny.csv", "✅ Using ultra-tiny dataset (1% sample, ~4MB)"),
-            ("Dataset/tiny_optimized.csv", "✅ Using tiny optimized dataset (10% sample)"),
-            ("Dataset/tiny_cleaned.csv", "✅ Using tiny dataset (10% sample, ~37MB)"), 
-            ("Dataset/optimized/optimized_main.csv", "✅ Using optimized dataset"),
-            ("Dataset/half_cleaned.csv", "⚠️ Using half dataset - high memory usage")
+            ("Dataset/ultra_tiny.csv", f"✅ Using ultra-tiny dataset (1% sample, ~4MB)"),
+            ("Dataset/tiny_optimized.csv", f"✅ Using tiny optimized dataset (10% sample)"),
+            ("Dataset/tiny_cleaned.csv", f"✅ Using tiny dataset (10% sample, ~37MB)"), 
+            ("Dataset/optimized/optimized_main.csv", f"✅ Using optimized dataset"),
+            ("Dataset/half_cleaned.csv", f"⚠️ Using half dataset - high memory usage")
         ]
         
         for dataset_path, success_message in dataset_options:
@@ -212,7 +212,7 @@ else:
 # Memory optimization tools
 with st.sidebar.expander("🔧 Memory Tools"):
     st.write("**Create smaller datasets:**")
-    if st.button("Create Tiny Dataset (10%)", help="Creates 10% sample"):
+    if st.button(f"Create Tiny Dataset (10%)", help=f"Creates 10% sample"):
         st.info("Run: `python create_tiny_dataset_simple.py`")
     st.write("**Current datasets:**")
     dataset_files = [
