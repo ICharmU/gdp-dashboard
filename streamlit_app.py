@@ -204,7 +204,7 @@ else:
     st.info("ℹ️ Using basic text processing (NLTK not available)")
 def preprocess_text(text):
     # Expand contractions
-    text = functions.expand_contractions(text)
+    text = expand_contractions(text)
     
     # Tokenization
     tokens = word_tokenize(text)
