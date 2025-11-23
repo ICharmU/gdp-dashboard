@@ -1,14 +1,36 @@
 import streamlit as st
 import pandas as pd
 from pathlib import Path
-from scipy.sparse import load_npz
-import requests
-
-import streamlit as st
-import pandas as pd
-from pathlib import Path
 import numpy as np
 import os
+
+# Setup NLTK data on first run
+@st.cache_resource
+def setup_nltk_data():
+    """Download NLTK data once per session"""
+    try:
+        import nltk
+        import ssl
+        
+        # Handle SSL certificate issues
+        try:
+            _create_unverified_https_context = ssl._create_unverified_context
+        except AttributeError:
+            pass
+        else:
+            ssl._create_default_https_context = _create_unverified_https_context
+        
+        # Download required data
+        nltk.download('stopwords', quiet=True)
+        nltk.download('punkt', quiet=True) 
+        nltk.download('wordnet', quiet=True)
+        return True
+    except Exception as e:
+        st.warning(f"NLTK setup failed: {e}")
+        return False
+
+# Initialize NLTK data
+setup_nltk_data()
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.sparse import csr_matrix
@@ -16,9 +38,60 @@ import re
 import tqdm
 from collections import defaultdict
 from collections import Counter
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
+# Try to import NLTK with fallback handling
+try:
+    import nltk
+    from nltk.corpus import stopwords
+    from nltk.tokenize import word_tokenize
+    from nltk.stem import WordNetLemmatizer
+    
+    # Download required NLTK data if not already present
+    try:
+        # Check if stopwords are available
+        stopwords.words('english')
+    except LookupError:
+        # Download stopwords if not available
+        nltk.download('stopwords', quiet=True)
+        
+    try:
+        # Check if punkt tokenizer is available
+        word_tokenize("test")
+    except LookupError:
+        # Download punkt if not available
+        nltk.download('punkt', quiet=True)
+        
+    try:
+        # Check if wordnet is available
+        lemmatizer = WordNetLemmatizer()
+        lemmatizer.lemmatize("test")
+    except LookupError:
+        # Download wordnet if not available
+        nltk.download('wordnet', quiet=True)
+        
+    NLTK_AVAILABLE = True
+    
+except ImportError:
+    # NLTK not available, define fallback functions
+    NLTK_AVAILABLE = False
+    
+    def word_tokenize(text):
+        """Fallback tokenizer using regex"""
+        import re
+        return re.findall(r'\b\w+\b', text.lower())
+    
+    class WordNetLemmatizer:
+        """Fallback lemmatizer that does nothing"""
+        def lemmatize(self, word):
+            return word.lower()
+    
+    # Define basic stopwords set as fallback
+    basic_stopwords = {
+        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 
+        'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 
+        'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 
+        'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those', 'i', 
+        'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them'
+    }
 from scipy.sparse import save_npz, load_npz
 
 contraction_map = {
@@ -115,8 +188,20 @@ def expand_contractions(text):
 # df = df.dropna()
 # unique_df = df[['Body_question',"Id"]].drop_duplicates()
 
-stop_words = set(stopwords.words('english')) - {"not", "no", "never"}
-lemmatizer = WordNetLemmatizer()
+# Initialize NLTK components or fallbacks
+if NLTK_AVAILABLE:
+    try:
+        stop_words = set(stopwords.words('english')) - {"not", "no", "never"}
+        lemmatizer = WordNetLemmatizer()
+    except Exception as e:
+        # Fallback if NLTK data is still not available
+        stop_words = basic_stopwords - {"not", "no", "never"}
+        lemmatizer = WordNetLemmatizer()
+        st.warning(f"⚠️ NLTK data not fully available, using basic stopwords: {e}")
+else:
+    stop_words = basic_stopwords - {"not", "no", "never"}
+    lemmatizer = WordNetLemmatizer()
+    st.info("ℹ️ Using basic text processing (NLTK not available)")
 def preprocess_text(text):
     # Expand contractions
     text = functions.expand_contractions(text)
