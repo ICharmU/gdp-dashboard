@@ -8,8 +8,6 @@ import streamlit as st
 import pandas as pd
 from pathlib import Path
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 import os
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -22,7 +20,6 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from scipy.sparse import save_npz, load_npz
-import functions
 
 contraction_map = {
     # Negative contractions
