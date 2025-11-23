@@ -1,6 +1,164 @@
 import streamlit as st
 import pandas as pd
 from pathlib import Path
+from scipy.sparse import load_npz
+import requests
+
+import streamlit as st
+import pandas as pd
+from pathlib import Path
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from scipy.sparse import csr_matrix
+import re
+import tqdm
+from collections import defaultdict
+from collections import Counter
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+from scipy.sparse import save_npz, load_npz
+import functions
+
+contraction_map = {
+    # Negative contractions
+    "ain't": "am not",
+    "aren't": "are not",
+    "can't": "cannot",
+    "couldn't": "could not",
+    "didn't": "did not",
+    "doesn't": "does not",
+    "don't": "do not",
+    "hadn't": "had not",
+    "hasn't": "has not",
+    "haven't": "have not",
+    "isn't": "is not",
+    "mightn't": "might not",
+    "mustn't": "must not",
+    "needn't": "need not",
+    "shan't": "shall not",
+    "shouldn't": "should not",
+    "wasn't": "was not",
+    "weren't": "were not",
+    "won't": "will not",
+    "wouldn't": "would not",
+    
+    # Pronoun contractions
+    "i'm": "i am",
+    "you're": "you are",
+    "he's": "he is",
+    "she's": "she is",
+    "it's": "it is",
+    "we're": "we are",
+    "they're": "they are",
+    "i've": "i have",
+    "you've": "you have",
+    "we've": "we have",
+    "they've": "they have",
+    "i'd": "i would",
+    "you'd": "you would",
+    "he'd": "he would",
+    "she'd": "she would",
+    "we'd": "we would",
+    "they'd": "they would",
+    "i'll": "i will",
+    "you'll": "you will",
+    "he'll": "he will",
+    "she'll": "she will",
+    "we'll": "we will",
+    "they'll": "they will",
+    
+    # Misc contractions
+    "let's": "let us",
+    "who's": "who is",
+    "what's": "what is",
+    "here's": "here is",
+    "there's": "there is",
+    "when's": "when is",
+    "where's": "where is",
+    "why's": "why is",
+    "how's": "how is",
+    "y'all": "you all",
+    "o'clock": "of the clock",
+    
+    # Informal / common text contractions
+    "ma'am": "madam",
+    "gonna": "going to",
+    "wanna": "want to",
+    "gotta": "got to",
+    "lemme": "let me",
+    "gimme": "give me",
+    "kinda": "kind of",
+    "ain’t": "am not",
+    "y’all": "you all",
+    "could’ve": "could have",
+    "should’ve": "should have",
+    "would’ve": "would have",
+    "might’ve": "might have",
+    "must’ve": "must have",
+    "shan’t": "shall not",
+    "let’s": "let us"
+}
+def expand_contractions(text):
+    for contraction, expanded in contraction_map.items():
+        text = text.replace(contraction, expanded)
+    return text
+
+#Load in data
+# tf_idf_matrix = load_npz("Dataset/sparse_matrix.npz")
+# df = pd.read_csv("Dataset/cleaned.csv",usecols = ['Id','Score_question','Body_question','Score_answer','Body_answer'])
+# word_index_df = pd.read_csv('Dataset/word_to_index.csv', keep_default_na=False)
+# unique_words = dict(zip(word_index_df['word'], word_index_df['index']))
+# idf = pd.read_csv('Dataset/idf.csv', keep_default_na=False)
+# idf = dict(zip(idf['word'], idf['idf_score']))
+# df = df.dropna()
+# unique_df = df[['Body_question',"Id"]].drop_duplicates()
+
+stop_words = set(stopwords.words('english')) - {"not", "no", "never"}
+lemmatizer = WordNetLemmatizer()
+def preprocess_text(text):
+    # Expand contractions
+    text = functions.expand_contractions(text)
+    
+    # Tokenization
+    tokens = word_tokenize(text)
+
+    # Lowercase and keep only alphabetic words
+    tokens = [word for word in tokens if word.isalpha()]
+
+    # Remove stopwords
+    tokens = [w for w in tokens if w not in stop_words]
+
+    # Lemmatize
+    tokens = [lemmatizer.lemmatize(w) for w in tokens]
+    return " ".join(tokens)
+
+def chatbot_reply(user_query):
+    # Transform user query into TF-IDF vector using the same steps we did on the dataframe
+    user_query = preprocess_text(user_query).split()
+    tf = Counter(user_query)
+    length = len(user_query)
+    data,cols = [],[]
+    for word,count in tf.items():
+        if word in unique_words:
+            data.append((count/length)*idf[word])
+            cols.append(unique_words[word])
+    query_vec = csr_matrix((data, ([0]*len(cols), cols)), shape=(1, len(unique_words)))
+
+    # Compute cosine similarity across whole df
+    similarity = cosine_similarity(query_vec, tf_idf_matrix).flatten()
+    
+    # Find the most similar question
+    idx = similarity.argmax()
+    # print(idx)
+    Id = unique_df.iloc[idx]['Id']
+    best_ans = df[df['Id'] == Id].sort_values('Score_answer',ascending=False).iloc[0]
+    # Retrieve the best matching Q&A
+    return best_ans["Body_answer"], best_ans["Body_question"], similarity[idx]
 
 # Set the title and favicon that appear in the Browser's tab bar.
 st.set_page_config(
@@ -66,69 +224,16 @@ def load_text_by_id(question_id=None, answer_id=None):
 df = load_essential_data()
 
 def generate_response(query: str):
-    """Generate response - searches dataset and provides meaningful output"""
     if not query or query.strip() == "":
         return "Please enter a question to get started!"
     
-    query = query.strip()
+    answer, question, score = chatbot_reply(query)
     
-    if df is not None and len(df) > 0:
-        try:
-            # Search in titles first (most relevant)
-            title_matches = df[df['Title'].str.contains(query, case=False, na=False)]
-            
-            # Also search in question bodies if available
-            if 'Body_question' in df.columns:
-                body_matches = df[df['Body_question'].str.contains(query, case=False, na=False)]
-                # Combine matches, prioritizing title matches
-                all_matches = pd.concat([title_matches, body_matches]).drop_duplicates(subset=['Id'])
-            else:
-                all_matches = title_matches
-            
-            if len(all_matches) > 0:
-                # Get best match based on answer score
-                best_match = all_matches.loc[all_matches['Score_answer'].idxmax()]
-                
-                # Load the actual answer text
-                if 'answer_id' in best_match:
-                    # Using optimized data
-                    answer_text = load_text_by_id(answer_id=best_match['answer_id'])
-                else:
-                    # Using original data
-                    answer_text = best_match.get('Body_answer', 'No detailed answer available')
-                
-                if answer_text and answer_text.strip():
-                    # Format the response nicely
-                    title = best_match.get('Title', 'Related Question')
-                    score = best_match.get('Score_answer', 0)
-                    
-                    if len(answer_text) > 300:
-                        answer_text = answer_text[:300] + "..."
-                    
-                    return f"**Question:** {title}\n\n**Answer (Score: {score}):** {answer_text}"
-                else:
-                    return f"Found a related question '{best_match.get('Title', 'Unknown')}' but no detailed answer is available."
-            
-            else:
-                # Try partial/fuzzy matching
-                query_words = query.lower().split()
-                if len(query_words) > 1:
-                    # Search for any of the words
-                    partial_pattern = '|'.join(query_words)
-                    partial_matches = df[df['Title'].str.contains(partial_pattern, case=False, na=False)]
-                    
-                    if len(partial_matches) > 0:
-                        best_match = partial_matches.loc[partial_matches['Score_answer'].idxmax()]
-                        title = best_match.get('Title', 'Related Question')
-                        return f"No exact matches found, but here's a related question: **{title}**\n\nTry searching for more specific terms."
-                
-                return f"No matches found for '{query}'. Try searching for:\n• Programming languages (python, javascript, etc.)\n• Specific topics (arrays, functions, etc.)\n• Error messages or concepts"
-                
-        except Exception as e:
-            return f"Search error occurred: {str(e)}. Falling back to simple response: {query[::-1]}"
+    try:           
+        return f"**Question:** {question}\n\n**Answer (Score: {score}):** {answer}"
+    except Exception as e:
+        return f"Search error occurred: {str(e)}. Falling back to simple response: {query[::-1]}"
     
-    else:
-        return f"Dataset not available. Echo response: {query[::-1]}"
 
 def thumbs_up():
     st.session_state["feedback_given"] = True
