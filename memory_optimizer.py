@@ -8,28 +8,46 @@ def optimize_dataset_memory(csv_path, output_dir="Dataset/optimized/"):
     Optimize dataset memory usage using multiple strategies
     """
     Path(output_dir).mkdir(exist_ok=True)
+    #use chunks to prevent memory spikes
+    print("Loading original dataset in chunks...")
+    chunksize = 100_000
+    chunks = []
+    #df = pd.read_csv(csv_path)
+    #original_memory = df.memory_usage(deep=True).sum() / 1024**2
+    #print(f"Original memory usage: {original_memory:.2f} MB")
+
+    for chunk in pd.read_csv(csv_path, chunksize = chunksize):
+        for col in ['Id', 'Score_question', 'Score_answer']:
+            if col in chunk.columns:
+                chunk[col] = pd.to_numeric(chunk[col], downcast = 'integer')
+
+        for col in ['Tag', 'Title']:
+            if col in chunk.columns:
+                chunk[col] = chunk[col.astype('category')]
+        chunks.append(chunk)
     
-    print("Loading original dataset...")
-    df = pd.read_csv(csv_path)
-    original_memory = df.memory_usage(deep=True).sum() / 1024**2
+    df = pd.concat(chunks, ignore_index= True)
+    original_memory = df.memory_usage(deep = True).sum()/ 1024**2
     print(f"Original memory usage: {original_memory:.2f} MB")
-    
-    # Strategy 1: Optimize data types
     print("Optimizing data types...")
-    
-    # Convert integer columns to smaller types
-    if 'Id' in df.columns:
-        df['Id'] = pd.to_numeric(df['Id'], downcast='integer')
-    if 'Score_question' in df.columns:
-        df['Score_question'] = pd.to_numeric(df['Score_question'], downcast='integer') 
-    if 'Score_answer' in df.columns:
-        df['Score_answer'] = pd.to_numeric(df['Score_answer'], downcast='integer')
-    
-    # Strategy 2: Convert text columns to categorical where beneficial
     print("Converting repeated strings to categorical...")
     
-    if 'Tag' in df.columns:
-        df['Tag'] = df['Tag'].astype('category')
+    # Strategy 1: Optimize data types
+    # print("Optimizing data types...")
+    
+    # Convert integer columns to smaller types
+    # if 'Id' in df.columns:
+    #     df['Id'] = pd.to_numeric(df['Id'], downcast='integer')
+    # if 'Score_question' in df.columns:
+    #     df['Score_question'] = pd.to_numeric(df['Score_question'], downcast='integer') 
+    # if 'Score_answer' in df.columns:
+    #     df['Score_answer'] = pd.to_numeric(df['Score_answer'], downcast='integer')
+    
+    # Strategy 2: Convert text columns to categorical where beneficial
+    # print("Converting repeated strings to categorical...")
+    
+    # if 'Tag' in df.columns:
+    #     df['Tag'] = df['Tag'].astype('category')
     
     # For titles, check if there are duplicates worth categorizing
     if 'Title' in df.columns:
@@ -37,20 +55,23 @@ def optimize_dataset_memory(csv_path, output_dir="Dataset/optimized/"):
         if (title_counts > 1).sum() > len(title_counts) * 0.1:  # If >10% are duplicates
             df['Title'] = df['Title'].astype('category')
     
-    # Strategy 3: Create separate mappings for body text (most memory intensive)
-    print("Creating text mappings...")
+   
+    print("Creating question/answer ID mappings...")
+    df['question_id'], unique_questions = pd.factorize(df['Body_question'])
+    df['anser_id'], unique_answers = pd.factorize(df['Body_answer'])
+
     
     # Create unique question and answer mappings
-    unique_questions = df['Body_question'].drop_duplicates().reset_index(drop=True)
-    unique_answers = df['Body_answer'].drop_duplicates().reset_index(drop=True)
+    # unique_questions = df['Body_question'].drop_duplicates().reset_index(drop=True)
+    # unique_answers = df['Body_answer'].drop_duplicates().reset_index(drop=True)
     
     # Create mapping dictionaries
-    question_to_id = {text: idx for idx, text in enumerate(unique_questions)}
-    answer_to_id = {text: idx for idx, text in enumerate(unique_answers)}
+    # question_to_id = {text: idx for idx, text in enumerate(unique_questions)}
+    # answer_to_id = {text: idx for idx, text in enumerate(unique_answers)}
     
     # Replace text with IDs
-    df['question_id'] = df['Body_question'].map(question_to_id)
-    df['answer_id'] = df['Body_answer'].map(answer_to_id)
+    # df['question_id'] = df['Body_question'].map(question_to_id)
+    # df['answer_id'] = df['Body_answer'].map(answer_to_id)
     
     # Drop original text columns
     df_optimized = df.drop(['Body_question', 'Body_answer'], axis=1)
