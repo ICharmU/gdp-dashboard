@@ -3,14 +3,7 @@ import pandas as pd
 from pathlib import Path
 import numpy as np
 import os
-
-# Import the helper function
-try:
-    from helper_functions import chatbot_reply as helper_chatbot_reply
-    HELPER_AVAILABLE = True
-except ImportError as e:
-    st.error(f"Failed to import helper_functions: {e}")
-    HELPER_AVAILABLE = False
+from helper_functions import chatbot_reply as helper_chatbot_reply
 
 # Setup NLTK data on first run
 @st.cache_resource
