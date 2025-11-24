@@ -122,10 +122,10 @@ def chatbot_reply(user_query, unique_words, idf, tf_idf_matrix, unique_df, df):
     query_vec = csr_matrix((data, ([0]*len(cols), cols)), shape=(1, len(unique_words)))
     similarity = cosine_similarity(query_vec, tf_idf_matrix).flatten()
     idx = similarity.argmax()
-    print(idx)
+    # print(idx)
     Id = unique_df.iloc[idx]['Id']
     best_ans = df[df['Id'] == Id].sort_values('Score_answer',ascending=False).iloc[0]
-    return best_ans["Body_answer"], best_ans["question"], similarity[idx]
+    return best_ans["Body_answer"], best_ans["Body_question"], similarity[idx]
 
 import numpy as np
 def top_n_results(user_query, unique_words, idf, tf_idf_matrix, unique_df, df,n=1,score_req = 10):
