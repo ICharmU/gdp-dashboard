@@ -21,10 +21,12 @@ def setup_nltk_data():
         else:
             ssl._create_default_https_context = _create_unverified_https_context
         
-        # Download required data
+        # Download required data - include both old and new punkt versions
         nltk.download('stopwords', quiet=True)
         nltk.download('punkt', quiet=True) 
+        nltk.download('punkt_tab', quiet=True)  # New tokenizer for newer NLTK versions
         nltk.download('wordnet', quiet=True)
+        nltk.download('omw-1.4', quiet=True)  # Additional wordnet data
         return True
     except Exception as e:
         st.warning(f"NLTK setup failed: {e}")
@@ -58,16 +60,18 @@ try:
         # Check if punkt tokenizer is available
         word_tokenize("test")
     except LookupError:
-        # Download punkt if not available
+        # Download punkt and punkt_tab if not available
         nltk.download('punkt', quiet=True)
+        nltk.download('punkt_tab', quiet=True)
         
     try:
         # Check if wordnet is available
         lemmatizer = WordNetLemmatizer()
         lemmatizer.lemmatize("test")
     except LookupError:
-        # Download wordnet if not available
+        # Download wordnet and additional data if not available
         nltk.download('wordnet', quiet=True)
+        nltk.download('omw-1.4', quiet=True)
         
     NLTK_AVAILABLE = True
     
