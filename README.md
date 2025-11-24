@@ -1,19 +1,6 @@
-# :earth_americas: GDP dashboard template
-
-A simple Streamlit app showing the GDP of different countries in the world.
-
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://gdp-dashboard-template.streamlit.app/)
-
-### How to run it on your own machine
-
-1. Install the requirements
-
-   ```
-   $ pip install -r requirements.txt
-   ```
-
-2. Run the app
-
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+# Local Setup
+1. Clone Repo
+2. Open a terminal in the same directory level as `streamlit_app.py`
+   1.  `conda env create -f environment.yml`
+   2.  `conda activate stackbot_streamlit`
+   3.  `streamlit run streamlit_app.app`
