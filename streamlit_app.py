@@ -312,7 +312,7 @@ def generate_response(query: str):
     answer, question, score = chatbot_reply(query)
     
     try:           
-        return f"**Question:** {question}\n\n**Answer (Score: {score}):** {answer}"
+        return f"**Question:** {question}\n\n**Answer:**\n\n **Similarity Score: {score}:**\n\n {answer}"
     except Exception as e:
         return f"Search error occurred: {str(e)}. Falling back to simple response: {query[::-1]}"
     
@@ -405,9 +405,9 @@ with st.sidebar.expander("🔧 Repository Status"):
 st.title("StackBot - Memory Optimized")
 
 # Add some example queries to help users
-st.markdown("**Try asking about:** *python arrays*, *javascript functions*, *error handling*, *data structures*")
+st.markdown("**Ask a programming question** (Ex: *python arrays*, *javascript functions*, *error handling*, *data structures*)")
 
-user_query = st.text_input("Ask a question", key="user_query", on_change=text_update, placeholder="e.g., 'python list comprehension' or 'javascript async await'")
+user_query = st.text_input("Please input a question", key="user_query", on_change=text_update, placeholder="e.g., 'python list comprehension' or 'javascript async await'")
 
 # Display bad query counter
 if st.session_state["bad_query_count"] > 0:

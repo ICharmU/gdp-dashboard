@@ -32,6 +32,10 @@ Your dataset likely has duplicate questions/answers. The memory_optimizer.py scr
 - Replace text with numeric IDs
 - Store mappings separately
 
+text_cols = ['Title', 'Body_question', 'Body_answer']
+for col in text_cols:
+    df[col] = df[col].astype('category')
+
 ### 5. Sparse Matrix Optimization (30-50% savings)
 ```python
 import numpy as np
