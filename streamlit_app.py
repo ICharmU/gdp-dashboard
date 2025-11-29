@@ -5,6 +5,11 @@ import numpy as np
 import os
 from helper_functions import chatbot_reply as helper_chatbot_reply
 
+st.set_page_config(
+    page_title='StackBot',
+    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
+)
+
 # Setup NLTK data on first run
 @st.cache_resource
 def setup_nltk_data():
@@ -258,10 +263,6 @@ def chatbot_reply(user_query):
     return helper_chatbot_reply(user_query, unique_words, idf, tf_idf_matrix, unique_df, df)
 
 # Set the title and favicon that appear in the Browser's tab bar.
-st.set_page_config(
-    page_title='StackBot',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
-)
 
 
 
@@ -288,12 +289,12 @@ def load_text_by_id(question_id=None, answer_id=None):
         return ""
 
 # Display loading status
-st.success(f"✅ Loaded main dataset ({len(df):,} rows)")
-st.success("✅ Loaded ultra-tiny TF-IDF matrix")
-st.success("✅ Loaded ultra-tiny word index mapping")
-st.success("✅ Loaded ultra-tiny IDF scores")
-st.success("✅ Loaded ultra-tiny unique questions")
-st.success("✅ All datasets loaded successfully - full chatbot functionality available")
+# st.success(f"✅ Loaded main dataset ({len(df):,} rows)")
+# st.success("✅ Loaded ultra-tiny TF-IDF matrix")
+# st.success("✅ Loaded ultra-tiny word index mapping")
+# st.success("✅ Loaded ultra-tiny IDF scores")
+# st.success("✅ Loaded ultra-tiny unique questions")
+# st.success("✅ All datasets loaded successfully - full chatbot functionality available")
 
 def generate_response(query: str):
     """Generate response using chatbot functionality"""
@@ -304,9 +305,9 @@ def generate_response(query: str):
     
     # Format response with similarity score
     if score > 0.1:  # Good similarity score
-        return f"**Similarity Score: {score:.4f}**\n\n**Answer:** {answer}\n\n---\n\n**Related Question:** {question}"
+        return f"**Similarity Score: {score:.4f}**\n\n**Answer:** {answer}\n\n---\n\n**Corresponding Question:** {question}"
     else:  # Low similarity, show with warning
-        return f"**⚠️ Low confidence match (Score: {score:.4f})**\n\n**Answer:** {answer}\n\n---\n\n**Related Question:** {question}\n\n*Try rephrasing your question for better results.*"
+        return f"**⚠️ Low confidence match (Similarity Score: {score:.4f})**\n\n**Answer:** {answer}\n\n---\n\n**Corresponding Question:** {question}\n\n*Try rephrasing your question for better results.*"
     
 
 def thumbs_up():
@@ -339,59 +340,59 @@ if "user_satisfied" not in st.session_state:
     st.session_state["user_satisfied"] = False
 
 # Display memory usage info and search statistics
-st.sidebar.header("📊 System Status")
+# st.sidebar.header("📊 System Status")
 
-if df is not None and len(df) > 0:
-    memory_usage = df.memory_usage(deep=True).sum() / 1024**2
-    st.sidebar.metric("Dataset Memory Usage", f"{memory_usage:.1f} MB")
-    st.sidebar.metric("Dataset Size", f"{len(df):,} rows")
-    st.sidebar.metric("Available Columns", f"{len(df.columns)}")
+# if df is not None and len(df) > 0:
+#     memory_usage = df.memory_usage(deep=True).sum() / 1024**2
+#     st.sidebar.metric("Dataset Memory Usage", f"{memory_usage:.1f} MB")
+#     st.sidebar.metric("Dataset Size", f"{len(df):,} rows")
+#     st.sidebar.metric("Available Columns", f"{len(df.columns)}")
     
-    # Memory status indicator
-    if memory_usage < 10:
-        st.sidebar.success(f"🟢 Excellent memory usage")
-    elif memory_usage < 50:
-        st.sidebar.info(f"🟡 Good memory usage") 
-    else:
-        st.sidebar.warning(f"🟠 High memory usage")
+#     # Memory status indicator
+#     if memory_usage < 10:
+#         st.sidebar.success(f"🟢 Excellent memory usage")
+#     elif memory_usage < 50:
+#         st.sidebar.info(f"🟡 Good memory usage") 
+#     else:
+#         st.sidebar.warning(f"🟠 High memory usage")
     
-    # Show column info
-    with st.sidebar.expander("Dataset Columns"):
-        for col in df.columns:
-            st.write(f"• {col}")
+#     # Show column info
+#     with st.sidebar.expander("Dataset Columns"):
+#         for col in df.columns:
+#             st.write(f"• {col}")
             
-    st.sidebar.success("✅ Dataset loaded successfully")
+#     st.sidebar.success("✅ Dataset loaded successfully")
     
-    # Dataset options
-    with st.sidebar.expander("📁 Dataset Configuration"):
-        st.write("**Currently using:**")
-        st.write("• ultra_tiny.csv (1% sample, ~11MB)")
-        st.write("**Status:** Maximum memory optimization")
-        st.info("App uses ultra-tiny dataset + helper_functions.py for chatbot responses.")
+#     # Dataset options
+#     with st.sidebar.expander("📁 Dataset Configuration"):
+#         st.write("**Currently using:**")
+#         st.write("• ultra_tiny.csv (1% sample, ~11MB)")
+#         st.write("**Status:** Maximum memory optimization")
+#         st.info("App uses ultra-tiny dataset + helper_functions.py for chatbot responses.")
         
-else:
-    st.sidebar.error("❌ Dataset not available")
-    st.sidebar.write("The system will use fallback responses.")
+# else:
+#     st.sidebar.error("❌ Dataset not available")
+#     st.sidebar.write("The system will use fallback responses.")
     
-# Memory optimization tools
-with st.sidebar.expander("🔧 Repository Status"):
-    st.write("**Available datasets in repo:**")
-    dataset_files = [
-        ("Dataset/ultra_tiny.csv", "1%", "🟢 Active"),
-        ("Dataset/tiny_cleaned.csv", "10%", "⚪ Available"), 
-        ("Dataset/half_cleaned.csv", "50%", "⚪ Available")
-    ]
-    for file_path, size, status in dataset_files:
-        if Path(file_path).exists():
-            file_size = Path(file_path).stat().st_size / 1024**2
-            st.write(f"{status} {size}: {file_size:.1f}MB")
-        else:
-            st.write(f"❌ {size} sample: Not found")
+# # Memory optimization tools
+# with st.sidebar.expander("🔧 Repository Status"):
+#     st.write("**Available datasets in repo:**")
+#     dataset_files = [
+#         ("Dataset/ultra_tiny.csv", "1%", "🟢 Active"),
+#         ("Dataset/tiny_cleaned.csv", "10%", "⚪ Available"), 
+#         ("Dataset/half_cleaned.csv", "50%", "⚪ Available")
+#     ]
+#     for file_path, size, status in dataset_files:
+#         if Path(file_path).exists():
+#             file_size = Path(file_path).stat().st_size / 1024**2
+#             st.write(f"{status} {size}: {file_size:.1f}MB")
+#         else:
+#             st.write(f"❌ {size} sample: Not found")
     
-    st.info("💡 App uses ultra_tiny.csv only for maximum memory efficiency")
+#     st.info("💡 App uses ultra_tiny.csv only for maximum memory efficiency")
     
-    if st.button("Recreate Ultra-Tiny Dataset", help="Regenerate the 1% sample"):
-        st.info("Run: `python create_tiny_dataset_simple.py`")
+#     if st.button("Recreate Ultra-Tiny Dataset", help="Regenerate the 1% sample"):
+#         st.info("Run: `python create_tiny_dataset_simple.py`")
 
 # Main interface
 st.title("StackBot - Helper Functions Integration")
@@ -399,7 +400,7 @@ st.title("StackBot - Helper Functions Integration")
 # Add some example queries to help users
 st.markdown("**Ask a programming question** (Ex: *python arrays*, *javascript functions*, *error handling*, *data structures*)")
 
-user_query = st.text_input("Please input a question", key="user_query", on_change=text_update, placeholder="e.g., 'python list comprehension' or 'javascript async await'")
+user_query = st.text_input("Please input a question", key="user_query", on_change=text_update, placeholder="Press Enter to Run")
 
 # Display bad query counter
 if st.session_state["bad_query_count"] > 0:
@@ -453,3 +454,17 @@ with st.expander("🔧 Integration Status"):
     **Helper function status:**
     ✅ helper_functions.py imported and working
     """)
+
+with st.expander("💡 How is the similarity score Determined"):
+    st.markdown("""
+                The similarity score is calculated using two different factors:  
+    1. TF-IDF  
+    2. Answer Question Ratio  
+We first calculated a TF-IDF score for each answer
+question in our dataset. Then we use cosine similarity
+to determine how similar the question asked is to each answer.
+We use the answer question ratio as a range to further filter
+our answer. Because our hypnothesis is that a good answer would
+have a simililar amount of upvotes to its question pair. If there 
+was a good question with 1000 upvotes a good answer to this quesiton
+                would have around 1000 upvotes also. """)
